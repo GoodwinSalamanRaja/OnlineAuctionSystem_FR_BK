@@ -23,6 +23,7 @@ function AddProduct({ onBackButtonClick }) {
         formData.append("productImage", image)
         fetch("http://localhost:8080/product/set", { method: "POST", body: formData })
             .then((response) => {
+                console.log(response);
                 if (response.ok) {
                     alert("Product added successfully!!")
                     window.location.reload();

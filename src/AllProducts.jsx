@@ -23,7 +23,7 @@ function AllProducts({ singleName }) {
     const [data, setData] = useState({ username: "", password: "" })
     const [error, setError] = useState({ username: "", password: "" })
     const [showpass, setShowPass] = useState(true)
-    const [page, setPage] = useState(0)
+    const [page, setPage] = useState(1)
     const [productData, setProductData] = useState([]);
     const navigate = useNavigate()
     console.log(singleName, "==========================")
@@ -33,55 +33,106 @@ function AllProducts({ singleName }) {
     }
     function handleSubmit(event) {
         event.preventDefault()
-        console.log(data)
+        console.log("data===", data)
         fetch("http://localhost:8080/user/login", { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(data) })
             .then((response) => {
                 console.log("res==", response)
-                return response.json()
-            })
-            .then((resdata) => {
-                // console.log(resdata)
-                if (resdata.statusCodeValue === 409) {
-                    console.log("wrong")
-                    console.log(resdata.body)
-                    setError({ ...error, username: resdata.body, password: "" })
+                // code for connecting springboot
+                // return response.json()
+                // code for connecting nodejs
+                if (response.status === 200) {
+                    return response.json()
+                        .then(async (resdata) => {
+                            console.log(resdata);
+                            if (resdata.status === true) {
+                                setError({ ...error, username: "", password: "" });
+                                setTimeout(success, 100)
+                                function success() {
+                                    console.log("success");
+                                    localStorage.setItem("token", resdata.token)
+                                    alert("Successfully Login!");
+                                    navigate("/Home", { state: data });
+                                }
+                            }
+                            else if (resdata.status === false) {
+                                setError({ ...error, username: "", password: resdata.msg })
+                            }
+                        })
+                }
+                else if (response.status === 404) {
+                    return response.json()
+                        .then((data) => {
+                            console.log(data);
+                            setError({ ...error, username: data.msg, password: "" })
+                        })
                 }
                 else {
-                    if ((data.username === resdata.username) && (data.password === resdata.password)) {
-                        setError({ ...error, username: "", password: "" });
-                        setTimeout(success, 100)
-                        function success() {
-                            console.log("success");
-                            alert("Successfully Login!");
-                            navigate("/Home", { state: resdata });
-                        }
-                    }
-                    else if (data.password !== resdata.password) {
-                        setError({ ...error, username: "", password: "The password you entered is incorrect" })
-                    }
+                    throw new Error("Response was not ok")
                 }
             })
+            // 
+            // code for connecting springboot
+            /*.then((resdata) => {
+              console.log(resdata);
+              // console.log(resdata)
+              if (resdata.statusCodeValue === 409) {
+                console.log("wrong")
+                console.log(resdata.body)
+                setError({ ...error, username: resdata.body, password: "" })
+              }
+              else {
+                if ((data.username === resdata.username) && (data.password === resdata.password)) {
+                    setError({ ...error, username: "", password: "" });
+                    setTimeout(success,100)
+                    function success() {
+                        console.log("success");
+                        alert("Successfully Login!");
+                        navigate("/Home",{state:resdata});
+                    }
+                }
+                else if (data.password !== resdata.password) {
+                  setError({ ...error, username: "", password: "The password you entered is incorrect" })
+                }
+              }
+            })*/
             .catch((error) => {
                 console.log("Failed to fetch data ", error)
             })
     }
+    // code for connecting springboot
+    // useEffect(() => {
+    //     axios.get(`http://localhost:8080/product/getPage/${page}`)
+    //         .then((response) => {
+    //             console.log("page==", response.data)
+    //             setProductData(response.data)
+    //         })
+    //         .catch((error) => {
+    //             console.log(error)
+    //         })
+    // }, [page])
+    // code for connecting nodejs
     useEffect(() => {
-        axios.get(`http://localhost:8080/product/getPage/${page}`)
-            .then((response) => {
-                console.log("page==", response.data)
-                setProductData(response.data)
+        axios.get(`http://localhost:8080/product/getByPage/${page}`)
+            .then((res) => {
+                console.log("all===", res.data);
+                setProductData(res.data)
             })
             .catch((error) => {
                 console.log(error)
             })
     }, [page])
+    // 
     return (
         <div className="py-5">
             <div className="row gap-5 justify-content-center">
                 {Array.isArray(productData) && productData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                         <div className="card-header overflow-hidden">
-                            <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                            {/* code for connecting springboot*/}
+                            {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                            {/* code for connecting nodejs */}
+                            <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                            {/*  */}
                         </div>
                         <div class="card-body">
                             <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -100,7 +151,11 @@ function AllProducts({ singleName }) {
                                     {canvasData && (
                                         <Offcanvas.Body>
                                             <div>
-                                                <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                                {/* code for connecting springboot*/}
+                                                {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                                {/* code for connecting nodejs */}
+                                                <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                                {/*  */}
                                                 <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                                 <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                                 <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -150,7 +205,8 @@ function AllProducts({ singleName }) {
             </div>
             <nav aria-label="..." className='mt-5 d-flex justify-content-center'>
                 <ul class="pagination pagination-lg">
-                    <li class="page-item">
+                    {/* code for connecting springboot */}
+                    {/* <li class="page-item">
                         <a class={`page-link ${(page === 0) ? "disabled" : ""}`} href='#' onClick={() => setPage(page - 1)}>Previous</a>
                     </li>
                     <li class="page-item">
@@ -170,7 +226,30 @@ function AllProducts({ singleName }) {
                     </li>
                     <li class="page-item">
                         <a class={`page-link ${(page === 4) ? "disabled" : ""}`} href='#' onClick={() => setPage(page + 1)}>Next</a>
+                    </li> */}
+                    {/* code for connecting nodejs */}
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 1) ? "disabled" : ""}`} href='#' onClick={() => setPage(page - 1)}>Previous</a>
                     </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 1) ? "active" : ""}`} href='#' onClick={() => setPage(1)}>1</a>
+                    </li>
+                    <li class="page-item" aria-current="page">
+                        <a class={`page-link ${(page === 2) ? "active" : ""}`} href='#' onClick={() => setPage(2)}>2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 3) ? "active" : ""}`} href='#' onClick={() => setPage(3)}>3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 4) ? "active" : ""}`} href='#' onClick={() => setPage(4)}>4</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 5) ? "active" : ""}`} href='#' onClick={() => setPage(5)}>5</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 5) ? "disabled" : ""}`} href='#' onClick={() => setPage(page + 1)}>Next</a>
+                    </li>
+                    {/*  */}
                 </ul>
             </nav>
         </div>

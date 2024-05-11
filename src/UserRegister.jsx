@@ -30,13 +30,23 @@ function UserRegister() {
                 })
                 .then((data) => {
                     console.log(data)
-                    if (data.statusCodeValue === 200) {
-                        alert("Account created successfully,Click OK to Login!")
+                    // Code for connecting springboot
+                    // if (data.statusCodeValue === 200) {
+                    //     alert("Account created successfully,Click OK to Login!")
+                    //     navigate('/Login')
+                    // }
+                    // else {
+                    //     alert(data.body)
+                    // }
+                    // Code for connecting nodejs
+                    if(Array.isArray(data)){
+                        alert(data[0].msg)
+                    }
+                    else{
+                        alert(data.msg)
                         navigate('/Login')
                     }
-                    else {
-                        alert(data.body)
-                    }
+                    // 
                 })
                 .catch((error) => {
                     console.log("Failed to fetch data ", error)

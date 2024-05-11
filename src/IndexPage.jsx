@@ -72,6 +72,7 @@ function IndexPage(){
     setTelevisionsPage(true)
   }
   useEffect(() => {
+    console.log(pageName);
     axios.get(`http://localhost:8080/product/getByName/${pageName}`)
     .then((response) => {
       console.log("name===",response.data)

@@ -7,47 +7,69 @@ import { Link } from "react-router-dom";
 function AdminProducts() {
    const [showContent, setShowContent] = useState(true)
    const [productData, setProductData] = useState([])
-   const [size,setSize] = useState(5)
+   const [size, setSize] = useState(5)
    const [id, setId] = useState()
-   const [productName,setProductName] = useState()
+   const [productName, setProductName] = useState()
    var count = 1;
    // console.log("id===",id)
    function handleBackButtonClick() {
       setShowContent(true);
    };
    function handleDelete() {
+      console.log(id);
       axios.delete(`http://localhost:8080/product/delete/${id}`)
          .then((response) => {
-            console.log(response)
-            console.log(response.data)
-            alert("Product deleted successfully!!")
-            setProductData(productData.filter(product => product.id !== id));
+            // console.log(response)
+            // console.log(response.data)
+            alert(response.data.msg)
+            // code for connecting springboot
+            // setProductData(productData.filter(product => product.id !== id));
+            // code for connecting nodejs
+            setProductData(productData.filter(product => product._id !== id));
+            // 
          })
          .catch((error) => {
             console.log(error)
          })
    }
    useEffect(() => {
-      console.log("productName===",productName)
-      axios.get(`http://localhost:8080/product/getBySearch/${encodeURIComponent(productName)}`)
-      .then((response) => {
-         console.log("search====",response.data)
-         setProductData(response.data)
-      })
-      .catch((error) => {
-         console.log(error)
-      })
-   },[productName])
-   useEffect(() => {
-      axios.get(`http://localhost:8080/product/getFive/${size}`)
+      console.log("productName===", productName)
+      // code for connecting springboot
+      // axios.get(`http://localhost:8080/product/getBySearch/${encodeURIComponent(productName)}`)
+      // code for connecting nodejs
+      axios.get(`http://localhost:8080/product/getBySearch/${encodeURIComponent(productName || " ")}`)
+      // 
          .then((response) => {
-            console.log("ten==",response.data)
+            console.log("search====", response.data)
             setProductData(response.data)
          })
          .catch((error) => {
             console.log(error)
          })
-   },[size])
+   }, [productName])
+   // code for connecting springboot
+   // useEffect(() => {
+   //    axios.get(`http://localhost:8080/product/getFive/${size}`)
+   //       .then((response) => {
+   //          console.log("ten==",response.data)
+   //          setProductData(response.data)
+   //       })
+   //       .catch((error) => {
+   //          console.log(error)
+   //       })
+   // },[size])
+   // code for connecting nodejs
+   useEffect(() => {
+      axios.get(`http://localhost:8080/product/getBySize/${size}`)
+         .then((res) => {
+            console.log("all===", res.data);
+            setProductData(res.data)
+         })
+         .catch((error) => {
+            console.log(error)
+         })
+   }, [size])
+   // 
    return (
       <div className="bg-white">
          {showContent ? (
@@ -75,7 +97,11 @@ function AdminProducts() {
                   <div className="col d-flex justify-content-end fs-5">
                      <div className="d-flex gap-2 w-50 input-group input-group-sm">
                         <span>Search :</span>
-                        <input type="search" className='form-control border-primary' onChange={(event) => {setProductName("%" + event.target.value + "%")}}></input>
+                        {/* code for connecting springboot */}
+                        {/* <input type="search" className='form-control border-primary' onChange={(event) => { setProductName("%" + event.target.value + "%") }}></input> */}
+                        {/* code for connecting nodejs */}
+                        <input type="search" className='form-control border-primary' onChange={(event) => { setProductName(event.target.value) }}></input>
+                        {/*  */}
                      </div>
                   </div>
                </div>
@@ -92,10 +118,19 @@ function AdminProducts() {
                         </tr>
                      </thead>
                      {Array.isArray(productData) && productData.map((datas) => (
-                        <tbody className="border border-2" key={datas.id}>
+                        // code for connecting springboot
+                        // <tbody className="border border-2" key={datas.id}></tbody>
+                        // code for connecting nodejs
+                        <tbody className="border border-2" key={datas._id}>
+                           {/*  */}
                            <tr className="border border-2">
                               <th scope="row" className="border border-2 ps-3">{count++}</th>
-                              <td className="align-self-center border border-2 ps-3"><img width="100%" alt="not found" src={"http://localhost:8080/uploads/" + datas.image} /></td>
+                              <td className="align-self-center border border-2 ps-3">
+                                 {/* code for connecting springboot */}
+                                 {/* <img width="100%" alt="not found" src={"http://localhost:8080/uploads/" + datas.image} /> */}
+                                 {/* code for connecting nodejs */}
+                                 <img width="100%" alt="not found" src={"http://localhost:8080/public/" + datas.image} />
+                              </td>
                               <td className="fw-bold align-self-center border border-2 ps-3">{datas.category}</td>
                               <td className="border border-2 ps-3">
                                  <div>
@@ -115,8 +150,13 @@ function AdminProducts() {
                               </td>
                               <td className="border border-2 ps-3">
                                  <div className="d-flex gap-3">
-                                    <Link to={`/ManageProduct/${datas.id}`} type="button" class="btn btn-outline-primary">Edit</Link>
-                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => setId(datas.id)}>Delete</button>
+                                    {/* code for connecting springboot */}
+                                    {/* <Link to={`/ManageProduct/${datas.id}`} type="button" class="btn btn-outline-primary">Edit</Link> */}
+                                    {/* <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => setId(datas.id)}>Delete</button> */}
+                                    {/* code for connecting nodejs */}
+                                    <Link to={`/ManageProduct/${datas._id}`} type="button" class="btn btn-outline-primary">Edit</Link>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => setId(datas._id)}>Delete</button>
+                                    {/*  */}
                                     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                        <div class="modal-dialog">
                                           <div class="modal-content">

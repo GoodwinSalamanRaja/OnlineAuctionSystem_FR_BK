@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ManageProduct() {
+    const navigate = useNavigate()
     const [image, setImage] = useState(null)
     const [comingImage, setComingImage] = useState(null)
     const [productData, setProductData] = useState({ name: "", category: "", description: "", regprice: "", bidprice: "", biddate: "" })
@@ -20,13 +22,13 @@ function ManageProduct() {
         event.preventDefault()
         // console.log(image)
         const formData = new FormData()
-        formData.append("name",productData.name)
-        formData.append("category",productData.category)
-        formData.append("description",productData.description)
-        formData.append("regprice",productData.regprice)
-        formData.append("bidprice",productData.bidprice)
-        formData.append("biddate",productData.biddate)
-        formData.append("productImage",image)
+        formData.append("name", productData.name)
+        formData.append("category", productData.category)
+        formData.append("description", productData.description)
+        formData.append("regprice", productData.regprice)
+        formData.append("bidprice", productData.bidprice)
+        formData.append("biddate", productData.biddate)
+        formData.append("productImage", image)
         fetch(`http://localhost:8080/product/update/${productId}`, { method: "PUT", body: formData })
             .then((response) => {
                 if (response.ok) {
@@ -34,11 +36,9 @@ function ManageProduct() {
                 }
             })
             .then((data) => {
-                console.log("update==",data)
-                alert("Product updated successfully!!")
-                window.history.close()
-                window.history.back()
-                window.location.reload();
+                console.log("update==", data)
+                alert(data.msg)
+                navigate("/AdminIndex")
             })
             .catch((error) => {
                 console.log(error)
@@ -50,8 +50,9 @@ function ManageProduct() {
                 // console.log(response)
                 console.log("response data:", response.data)
                 setProductData(response.data)
+                console.log(response.data.image.files);
                 setComingImage(response.data.image)
-                console.log("=====", productData)
+                // console.log("=====", productData)
             })
             .catch((error) => {
                 console.log(error)
@@ -93,20 +94,6 @@ function ManageProduct() {
                         <input type="number" class="form-control form-control-lg" id="inputAddress2" name="regprice" value={productData.regprice} onChange={handleInputChange} />
                     </div>
                     <div class="col-md-6 fs-5 mb-3">
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        
                         <label for="inputCity" class="form-label">Starting Bidding Amount</label>
                         <input type="number" class="form-control form-control-lg" id="inputCity" name="bidprice" value={productData.bidprice} onChange={handleInputChange} />
                     </div>
@@ -122,7 +109,11 @@ function ManageProduct() {
                             <button class="btn btn-outline-danger" type="button" id="inputGroupFileAddon04" onClick={() => { setImage(null); setComingImage(null) }}>Delete</button>
                         </div>
                         <div className="text-center">
-                            {comingImage && (<img className="mt-3" src={"http://localhost:8080/uploads/" + comingImage} alt="not found" width="50%" />)}
+                            {/* code for connecting springboot */}
+                            {/* {comingImage && (<img className="mt-3" src={"http://localhost:8080/uploads/" + comingImage} alt="not found" width="50%" />)} */}
+                            {/* code for connecting nodejs */}
+                            {comingImage && (<img className="mt-3" src={"http://localhost:8080/public/" + comingImage} alt="not found" width="50%" />)}
+                            {/*  */}
                             {image && (
                                 <img className="mt-3" src={URL.createObjectURL(image)} alt="Not found" width="50%" />
                             )}

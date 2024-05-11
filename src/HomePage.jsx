@@ -22,13 +22,13 @@ function HomePage() {
   const [televisionsPage, setTelevisionsPage] = useState(false)
   const [bid, setBid] = useState(false)
   const [show, setShow] = useState(false);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [canvasData, setCanvasData] = useState()
   const handleClose = () => setShow(false);
   const [pageData, setPageData] = useState()
   const [pageName, setPageName] = useState()
   const bidInputRef = useRef(null)
-  const [bidDetails,setBidDetails] = useState()
+  const [bidDetails, setBidDetails] = useState()
   // console.log(bidDetails,"=========")
   function handleShow(nme, cat, des, regp, bidp, biddt, img) {
     setCanvasData({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img })
@@ -39,7 +39,7 @@ function HomePage() {
   const location = useLocation();
   // console.log(location)
   const resdata = location.state
-  console.log("id===",resdata);
+  console.log("id===", resdata);
   const scrollToBidInput = () => {
     // console.log("nnndndnn")
     // console.log(bidInputRef.current)
@@ -47,6 +47,7 @@ function HomePage() {
     bidInputRef.current.focus()
   };
   function logout() {
+    localStorage.removeItem("token")
     window.history.back()
     setTimeout(terminate, 500)
     function terminate() {
@@ -106,30 +107,46 @@ function HomePage() {
     setMobilePhonesPage(false)
     setTelevisionsPage(true)
   }
-  function handleBidChange(event){
-    setBidDetails({...bidDetails,amount:event.target.value})
+  function handleBidChange(event) {
+    setBidDetails({ ...bidDetails, amount: event.target.value })
   }
-  function handleSubmit(event){
+  function handleSubmit(event) {
     event.preventDefault();
-    axios.post(`http://localhost:8080/bidding/set/${resdata.id}`,bidDetails)
-    .then((response) => {
-      console.log("bid===",response.data)
-      alert("Bid submitted successfully!!")
-      setBid(false)
-    })
-    .catch((error) => {
-      console.log(error)
-    })
-  }
-  useEffect(() => {
-    axios.get(`http://localhost:8080/product/getPage/${page}`)
+    // code for connecting springboot
+    // axios.post(`http://localhost:8080/bidding/set/${resdata.id}`, bidDetails)
+    // code for connecting nodejs
+    axios.post(`http://localhost:8080/bidding/set/${resdata._id}`, bidDetails)
+    // 
       .then((response) => {
-        console.log("page==", response.data)
-        setProductData(response.data)
+        console.log("bid===", response.data)
+        alert("Bid submitted successfully!!")
+        setBid(false)
       })
       .catch((error) => {
         console.log(error)
       })
+  }
+  useEffect(() => {
+    // code for connecting springboot
+    // axios.get(`http://localhost:8080/product/getPage/${page}`)
+    //   .then((response) => {
+    //     console.log("page==", response.data)
+    //     setProductData(response.data)
+    //   })
+    //   .catch((error) => {
+    //     console.log(error)
+    //   })
+    // code for connecting nodejs
+    // console.log(localStorage.getItem("token"));
+    axios.get(`http://localhost:8080/product/getByPage/${page}`,{headers:{"Authorization":localStorage.getItem("token")}})
+      .then((res) => {
+        console.log("all===", res.data);
+        setProductData(res.data)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    // 
     axios.get(`http://localhost:8080/product/getByName/${pageName}`)
       .then((response) => {
         console.log("name===", response.data)
@@ -208,7 +225,11 @@ function HomePage() {
                   {Array.isArray(productData) && productData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top cardimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -227,7 +248,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -236,10 +261,10 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     {/* <Link className='btn btn-primary p-2 w-25' to="/Login">Bid</Link> */}
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>Bid</Button>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>Bid</Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -259,27 +284,51 @@ function HomePage() {
                 </div>
                 <nav aria-label="..." className='mt-5 d-flex justify-content-center'>
                   <ul class="pagination pagination-lg">
-                    <li class="page-item">
-                      <button class={`page-link ${(page === 0) ? "disabled" : ""}`} href='#' onClick={() => { setPage(page - 1); window.scrollTo({ top: 0 }) }}>Previous</button>
+                    {/* code for connecting springboot */}
+                    {/* <li class="page-item">
+                        <a class={`page-link ${(page === 0) ? "disabled" : ""}`} href='#' onClick={() => setPage(page - 1)}>Previous</a>
                     </li>
                     <li class="page-item">
-                      <button class={`page-link ${(page === 0) ? "active" : ""}`} onClick={() => { setPage(0); window.scrollTo({ top: 0 }) }}>1</button>
+                        <a class={`page-link ${(page === 0) ? "active" : ""}`} href='#' onClick={() => setPage(0)}>1</a>
                     </li>
                     <li class="page-item" aria-current="page">
-                      <button class={`page-link ${(page === 1) ? "active" : ""}`} onClick={() => { setPage(1); window.scrollTo({ top: 0 }) }}>2</button>
+                        <a class={`page-link ${(page === 1) ? "active" : ""}`} href='#' onClick={() => setPage(1)}>2</a>
                     </li>
                     <li class="page-item">
-                      <button class={`page-link ${(page === 2) ? "active" : ""}`} href='#' onClick={() => { setPage(2); window.scrollTo({ top: 0 }) }}>3</button>
+                        <a class={`page-link ${(page === 2) ? "active" : ""}`} href='#' onClick={() => setPage(2)}>3</a>
                     </li>
                     <li class="page-item">
-                      <button class={`page-link ${(page === 3) ? "active" : ""}`} href='#' onClick={() => { setPage(3); window.scrollTo({ top: 0 }) }}>4</button>
+                        <a class={`page-link ${(page === 3) ? "active" : ""}`} href='#' onClick={() => setPage(3)}>4</a>
                     </li>
                     <li class="page-item">
-                      <button class={`page-link ${(page === 4) ? "active" : ""}`} href='#' onClick={() => { setPage(4); window.scrollTo({ top: 0 }) }}>5</button>
+                        <a class={`page-link ${(page === 4) ? "active" : ""}`} href='#' onClick={() => setPage(4)}>5</a>
                     </li>
                     <li class="page-item">
-                      <button class={`page-link ${(page === 4) ? "disabled" : ""}`} href='#' onClick={() => { setPage(page + 1); window.scrollTo({ top: 0 }) }}>Next</button>
+                        <a class={`page-link ${(page === 4) ? "disabled" : ""}`} href='#' onClick={() => setPage(page + 1)}>Next</a>
+                    </li> */}
+                    {/* code for connecting nodejs */}
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 1) ? "disabled" : ""}`} href='#' onClick={() => setPage(page - 1)}>Previous</a>
                     </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 1) ? "active" : ""}`} href='#' onClick={() => setPage(1)}>1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 2) ? "active" : ""}`} href='#' onClick={() => setPage(2)}>2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 3) ? "active" : ""}`} href='#' onClick={() => setPage(3)}>3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 4) ? "active" : ""}`} href='#' onClick={() => setPage(4)}>4</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 5) ? "active" : ""}`} href='#' onClick={() => setPage(5)}>5</a>
+                    </li>
+                    <li class="page-item">
+                        <a class={`page-link ${(page === 5) ? "disabled" : ""}`} href='#' onClick={() => setPage(page + 1)}>Next</a>
+                    </li>
+                    {/*  */}
                   </ul>
                 </nav>
               </div>
@@ -289,7 +338,11 @@ function HomePage() {
                   {Array.isArray(pageData) && pageData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -307,7 +360,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -315,12 +372,12 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
                                       Bid
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -345,7 +402,11 @@ function HomePage() {
                   {Array.isArray(pageData) && pageData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -363,7 +424,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -371,12 +436,12 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
                                       Bid
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -401,7 +466,11 @@ function HomePage() {
                   {Array.isArray(pageData) && pageData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -419,7 +488,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1 mt-3"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -427,12 +500,12 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
                                       Bid
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -457,7 +530,11 @@ function HomePage() {
                   {Array.isArray(pageData) && pageData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -475,7 +552,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -483,12 +564,12 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
-                                    <Button variant="primary" ref={bidInputRef} className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>
+                                    <Button variant="primary" ref={bidInputRef} className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
                                       Bid
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -513,7 +594,11 @@ function HomePage() {
                   {Array.isArray(pageData) && pageData.map((datas) => (
                     <div class="col-5 card shadow" key={datas.id}>
                       <div className="card-header overflow-hidden">
-                        <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/* code for connecting springboot*/}
+                        {/* <img src={"http://localhost:8080/uploads/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." /> */}
+                        {/* code for connecting nodejs */}
+                        <img src={"http://localhost:8080/public/" + datas.image} class="card-img-top proimg" width="100%" height="400px" alt="..." />
+                        {/*  */}
                       </div>
                       <div class="card-body">
                         <div class="card-text d-flex gap-1"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{datas.name}</span></div>
@@ -531,7 +616,11 @@ function HomePage() {
                             {canvasData && (
                               <Offcanvas.Body>
                                 <div>
-                                  <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" />
+                                  {/* code for connecting springboot*/}
+                                  {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
+                                  {/* code for connecting nodejs */}
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
@@ -539,12 +628,12 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => {setBid(true);setTimeout(scrollToBidInput, 100);setBidDetails({...bidDetails,productName:canvasData.name})}}>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
                                       Bid
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange}/>
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>

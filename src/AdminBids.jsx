@@ -12,8 +12,24 @@ function AdminBids() {
     function BidUserDetails(a, b, c) {
         setUserData({ ...userData, name: a, username: b, email: c })
     }
+    // const bidAmountsByProduct = {};
+    // if (biddingData) {
+    //     console.log("nsnnnnnnnnnn");
+    //     biddingData.forEach(element => {
+    //         element.biddings.forEach((bid) => {
+    //             if (!bidAmountsByProduct[bid.productName] || bidAmountsByProduct[bid.productName] < bid.amount) {
+    //                 bidAmountsByProduct[bid.productName] = bid.amount;
+    //             }
+    //         })
+    //     });
+    //     console.log("======", bidAmountsByProduct);
+    // }
     useEffect(() => {
-        axios.get(`http://localhost:8080/user/searchuserwithbid/${encodeURIComponent(name)}`)
+        // code for connecting springboot
+        // axios.get(`http://localhost:8080/user/searchuserwithbid/${encodeURIComponent(name)}`)
+        // code for connecting nodejs
+        axios.get(`http://localhost:8080/user/searchuserwithbid/${encodeURIComponent(name || " ")}`)
+            // 
             .then((response) => {
                 console.log("search====", response.data)
                 setBiddingData(response.data)
@@ -60,6 +76,7 @@ function AdminBids() {
                 setBiddingData(response.data)
                 // console.log("checkk==", biddingData)
                 // console.log(biddingData[0].biddings[0].productName)
+                console.log(biddingData);
             })
             .catch((error) => {
                 console.log(error)
@@ -86,7 +103,11 @@ function AdminBids() {
                     <div className="col d-flex justify-content-end fs-5">
                         <div className="d-flex gap-2 w-50 input-group input-group-sm">
                             <span>Search :</span>
-                            <input type="search" className='form-control border-primary' onChange={(event) => { setName("%" + event.target.value + "%") }}></input>
+                            {/* code for connecting springboot */}
+                            {/* <input type="search" className='form-control border-primary' onChange={(event) => { setName("%" + event.target.value + "%") }}></input> */}
+                            {/* code for connecting nodejs */}
+                            <input type="search" className='form-control border-primary' onChange={(event) => { setName(event.target.value) }}></input>
+                            {/*  */}
                         </div>
                     </div>
                 </div>
@@ -103,52 +124,69 @@ function AdminBids() {
                             </tr>
                         </thead>
                         {Array.isArray(biddingData) && biddingData.map((datas) => (
-                            <tbody className="border border-2" key={datas.id}>
-                                {datas.biddings.map((bidding) => (
-                                    <tr className="border border-2" key={bidding.id}>
-                                        <th scope="row" className="border border-2 text-center py-3">{count++}</th>
-                                        <td className="fw-bold align-self-center border border-2 text-center">{bidding.productName}</td>
-                                        <td className="border border-2 text-center">{datas.name}</td>
-                                        <td className="border border-2 text-center fw-bold">{bidding.amount}</td>
-                                        <td className="border border-2 text-center">Pending</td>
-                                        <td className="border border-2 text-center">
-                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" onClick={() => BidUserDetails(datas.name, datas.username, datas.email)}>
-                                                View Buyer Details
-                                            </button>
-                                            {userData && (
-                                                <div class="modal" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="staticBackdropLabel">Buyer Details</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div>
-                                                                    <div className="d-flex gap-1">
-                                                                        <p>Name :</p>
-                                                                        <span className="fw-bold">{userData.name}</span>
-                                                                    </div>
-                                                                    <div className="d-flex gap-1">
-                                                                        <p>UserName :</p>
-                                                                        <span className="fw-bold">{userData.username}</span>
-                                                                    </div>
-                                                                    <div className="d-flex gap-1">
-                                                                        <p>Email :</p>
-                                                                        <span className="fw-bold">{userData.email}</span>
+                            // code for connecting springboot
+                            // <tbody className="border border-2" key={datas.id}>
+                            // code for connecting nodejs
+                            <tbody className="border border-2" key={datas._id}>
+                                {/*  */}
+                                {datas.biddings.map((bidding) => {
+                                    // let amountss = []
+                                    // amountss.push(bidding.amount)
+                                    // console.log("aaa", amountss);
+                                    // const highestAmount = Math.max()
+                                    // console.log(highestAmount);
+                                    // const isWinner = highestAmount === bidding.amount
+                                    // console.log(isWinner);
+                                    // code for connecting springboot
+                                    // <tr className="border border-2" key={bidding.id}>
+                                    return (
+                                        // code for connecting nodejs
+                                        <tr className="border border-2" key={bidding._id}>
+                                            {/*  */}
+                                            <th scope="row" className="border border-2 text-center py-3">{count++}</th>
+                                            <td className="fw-bold align-self-center border border-2 text-center">{bidding.productName}</td>
+                                            <td className="border border-2 text-center">{datas.name}</td>
+                                            <td className="border border-2 text-center fw-bold">{bidding.amount}</td>
+                                            <td className="border border-2 text-center">pending</td>
+                                            <td className="border border-2 text-center">
+                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" onClick={() => BidUserDetails(datas.name, datas.username, datas.email)}>
+                                                    View Buyer Details
+                                                </button>
+                                                {userData && (
+                                                    <div class="modal" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="staticBackdropLabel">Buyer Details</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div>
+                                                                        <div className="d-flex gap-1">
+                                                                            <p>Name :</p>
+                                                                            <span className="fw-bold">{userData.name}</span>
+                                                                        </div>
+                                                                        <div className="d-flex gap-1">
+                                                                            <p>UserName :</p>
+                                                                            <span className="fw-bold">{userData.username}</span>
+                                                                        </div>
+                                                                        <div className="d-flex gap-1">
+                                                                            <p>Email :</p>
+                                                                            <span className="fw-bold">{userData.email}</span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         ))}
                     </table>

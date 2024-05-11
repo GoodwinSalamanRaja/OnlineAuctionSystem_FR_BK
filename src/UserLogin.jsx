@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 function UserLogin() {
   const [data, setData] = useState({ username: "", password: "" })
   const [error, setError] = useState({ username: "", password: "" })
-  const[showpass,setShowPass] = useState(true)
+  const [showpass, setShowPass] = useState(true)
   const navigate = useNavigate()
   function handleChange(event) {
     const { name, value } = event.target
@@ -14,13 +14,47 @@ function UserLogin() {
   }
   function handleSubmit(event) {
     event.preventDefault()
-    console.log(data)
+    console.log("data===", data)
     fetch("http://localhost:8080/user/login", { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(data) })
       .then((response) => {
         console.log("res==", response)
-        return response.json()
+        // code for connecting springboot
+        // return response.json()
+        // code for connecting nodejs
+        if (response.status === 200) {
+          return response.json()
+            .then(async (resdata) => {
+              console.log(resdata);
+              if(resdata.status===true){
+                setError({ ...error, username: "", password: "" });
+                setTimeout(success, 100)
+                function success() {
+                  console.log("success");
+                  localStorage.setItem("token",resdata.token)
+                  alert("Successfully Login!");
+                  navigate("/Home", { state: resdata.data });
+                }
+              }
+              else if (resdata.status===false) {
+                setError({ ...error, username: "", password: resdata.msg })
+              }
+            })
+        }
+        else if (response.status === 404) {
+          return response.json()
+            .then((data) => {
+              console.log(data);
+              setError({ ...error, username: data.msg, password: "" })
+            })
+        }
+        else {
+          throw new Error("Response was not ok")
+        }
       })
-      .then((resdata) => {
+      // 
+      // code for connecting springboot
+      /*.then((resdata) => {
+        console.log(resdata);
         // console.log(resdata)
         if (resdata.statusCodeValue === 409) {
           console.log("wrong")
@@ -41,7 +75,7 @@ function UserLogin() {
             setError({ ...error, username: "", password: "The password you entered is incorrect" })
           }
         }
-      })
+      })*/
       .catch((error) => {
         console.log("Failed to fetch data ", error)
       })
@@ -52,15 +86,15 @@ function UserLogin() {
         <fieldset className='col-10 col-sm-6 col-lg-4 col-xl-3 h-75 p-5 d-flex flex-column justify-content-center fieldset'>
           <h3 className='text-white fw-bold text-center mb-5'>Login</h3>
           <div class="form-floating">
-            <input name="username" value={data.username} onChange={handleChange} type="text" class="form-control shadow-lg" id="floatingInput" placeholder="name@example.com" required/>
+            <input name="username" value={data.username} onChange={handleChange} type="text" class="form-control shadow-lg" id="floatingInput" placeholder="name@example.com" required />
             <label for="floatingInput">Username</label>
             <p className='text-danger'>{error.username}</p>
           </div>
           <div class="form-floating mt-3 position-relative">
-              <input name="password" value={data.password} onChange={handleChange} type={showpass?"password":"text"} class="form-control" id="floatingPassword" placeholder="Password" required/>
-              <label for="floatingPassword">Password</label>
-              <i class="bi bi-eye-fill position-absolute fs-4 absl" type="button" onClick={() => setShowPass(!showpass)}></i>
-              <p className='text-danger'>{error.password}</p>
+            <input name="password" value={data.password} onChange={handleChange} type={showpass ? "password" : "text"} class="form-control" id="floatingPassword" placeholder="Password" required />
+            <label for="floatingPassword">Password</label>
+            <i class="bi bi-eye-fill position-absolute fs-4 absl" type="button" onClick={() => setShowPass(!showpass)}></i>
+            <p className='text-danger'>{error.password}</p>
           </div>
           <div className='text-center mt-3'>
             <input type='submit' value="Login" className='bg-success rounded-pill text-white fw-bold p-2 w-50 border-0' />
