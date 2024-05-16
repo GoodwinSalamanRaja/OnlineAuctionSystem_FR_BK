@@ -76,7 +76,7 @@ function AdminBids() {
                 setBiddingData(response.data)
                 // console.log("checkk==", biddingData)
                 // console.log(biddingData[0].biddings[0].productName)
-                console.log(biddingData);
+                // console.log(biddingData);
             })
             .catch((error) => {
                 console.log(error)

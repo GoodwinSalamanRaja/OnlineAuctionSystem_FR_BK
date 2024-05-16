@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Button from 'react-bootstrap/esm/Button';
@@ -17,13 +18,29 @@ function Laptops({ laptopsData }) {
   const [showpass, setShowPass] = useState(true)
   const navigate = useNavigate()
   function handleShow(nme, cat, des, regp, bidp, biddt, img) {
-    setCanvasData({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img })
+    setCanvasData((canvasData) => ({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img }))
     setShow(true);
   }
   function handleChange(event) {
     const { name, value } = event.target
     setData({ ...data, [name]: value })
   }
+  // code for connecting nodejs this part of backend is not done in springboot
+  function handleView(x) {
+    axios.get(`http://localhost:8080/bidding/get/${x}`)
+      .then((res) => {
+        if (res.data.length === 1) {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: res.data[0].amount }))
+        }
+        else {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: "No one bids till now" }))
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+  //
   function handleSubmit(event) {
     event.preventDefault()
     console.log("data===", data)
@@ -110,7 +127,7 @@ function Laptops({ laptopsData }) {
               <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
               <>
                 <div className="text-center mt-3">
-                  <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                  <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name) }}>View</Button>
                 </div>
                 <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                   <Offcanvas.Header closeButton>
@@ -130,6 +147,7 @@ function Laptops({ laptopsData }) {
                         <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                         <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                         <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                        <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                         <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                         <div className="text-center mt-4">
                           <Button variant="primary" className='w-25 p-2' onClick={handleSho}>

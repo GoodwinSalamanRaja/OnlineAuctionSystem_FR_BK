@@ -13,7 +13,8 @@ function AllProducts({ singleName }) {
     const handleClose = () => setShow(false);
     const [canvasData, setCanvasData] = useState()
     function handleShow(nme, cat, des, regp, bidp, biddt, img) {
-        setCanvasData({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img })
+        console.log("show called");
+        setCanvasData(canvasData => ({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img }))
         setShow(true);
         // console.log("can===", canvasData)
     }
@@ -25,12 +26,32 @@ function AllProducts({ singleName }) {
     const [showpass, setShowPass] = useState(true)
     const [page, setPage] = useState(1)
     const [productData, setProductData] = useState([]);
+    // console.log(productData);
+    // console.log(canvasData);
     const navigate = useNavigate()
-    console.log(singleName, "==========================")
+    // console.log(singleName, "==========================")
     function handleChange(event) {
         const { name, value } = event.target
         setData({ ...data, [name]: value })
     }
+    // code for connecting nodejs this part of backend is not done in springboot
+    function handleView(x){
+        axios.get(`http://localhost:8080/bidding/get/${x}`)
+        .then((res) => {
+            // console.log("biidd",res.data[0].amount);
+            // console.log("l===",res.data.length);
+            if(res.data.length === 1){
+                setCanvasData(canvasData => ({...canvasData,highestbid:res.data[0].amount}))
+            }
+            else{
+                setCanvasData(canvasData => ({...canvasData,highestbid:"No one bids till now"}))
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
+    // 
     function handleSubmit(event) {
         event.preventDefault()
         console.log("data===", data)
@@ -140,7 +161,7 @@ function AllProducts({ singleName }) {
                             <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                             <>
                                 <div className="text-center mt-3">
-                                    <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                                    <Button className='p-2 w-25' variant="primary" onClick={() => {handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image);handleView(datas.name);}}>View</Button>
                                     {/* <Button variant="primary" onClick={toggleShow} className="me-2">{name}</Button> */}
                                 </div>
                                 <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
@@ -161,6 +182,7 @@ function AllProducts({ singleName }) {
                                                 <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                                 <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                                 <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                                <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                                 <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                                 <div className="text-center mt-4">
                                                     <Button variant="primary" className='w-25 p-2' onClick={handleSho}>

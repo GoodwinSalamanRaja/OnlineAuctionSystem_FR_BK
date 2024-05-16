@@ -29,9 +29,13 @@ function HomePage() {
   const [pageName, setPageName] = useState()
   const bidInputRef = useRef(null)
   const [bidDetails, setBidDetails] = useState()
+  const [productName, setProductName] = useState()
+  const [amount, setAmount] = useState(null)
+  const [highestBid,setHighestBid] = useState(null)
+  const [bidError,setBidError] = useState(null)
   // console.log(bidDetails,"=========")
   function handleShow(nme, cat, des, regp, bidp, biddt, img) {
-    setCanvasData({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img })
+    setCanvasData((canvasData) => ({ ...canvasData, name: nme, category: cat, description: des, regprice: regp, bidprice: bidp, biddate: biddt, image: img }))
     setShow(true);
     // console.log("can===", canvasData)
   }
@@ -39,7 +43,7 @@ function HomePage() {
   const location = useLocation();
   // console.log(location)
   const resdata = location.state
-  console.log("id===", resdata);
+  // console.log("id===", resdata);
   const scrollToBidInput = () => {
     // console.log("nnndndnn")
     // console.log(bidInputRef.current)
@@ -109,14 +113,38 @@ function HomePage() {
   }
   function handleBidChange(event) {
     setBidDetails({ ...bidDetails, amount: event.target.value })
+    setAmount(event.target.value)
   }
+  // code for connecting nodejs this part of backend is not done in springboot
+  function handleView(x) {
+    axios.get(`http://localhost:8080/bidding/get/${x}`)
+      .then((res) => {
+        if (res.data.length === 1) {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: res.data[0].amount }))
+        }
+        else {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: "No one bids till now" }))
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+  useEffect(() => {
+    console.log("useeefeect handleView called");
+    // console.log(productName);
+    handleView(productName)
+  }, [bid])
+  //
   function handleSubmit(event) {
     event.preventDefault();
     // code for connecting springboot
     // axios.post(`http://localhost:8080/bidding/set/${resdata.id}`, bidDetails)
     // code for connecting nodejs
-    axios.post(`http://localhost:8080/bidding/set/${resdata._id}`, bidDetails)
-    // 
+    if(amount > highestBid){
+      setBidError(null)
+      axios.post(`http://localhost:8080/bidding/set/${resdata._id}`, bidDetails)
+      // 
       .then((response) => {
         console.log("bid===", response.data)
         alert("Bid submitted successfully!!")
@@ -125,6 +153,10 @@ function HomePage() {
       .catch((error) => {
         console.log(error)
       })
+    }
+    else{
+      setBidError("Your bids must be more than other users!")
+    }
   }
   useEffect(() => {
     // code for connecting springboot
@@ -138,7 +170,7 @@ function HomePage() {
     //   })
     // code for connecting nodejs
     // console.log(localStorage.getItem("token"));
-    axios.get(`http://localhost:8080/product/getByPage/${page}`,{headers:{"Authorization":localStorage.getItem("token")}})
+    axios.get(`http://localhost:8080/product/getByPage/${page}`, { headers: { "Authorization": localStorage.getItem("token") } })
       .then((res) => {
         console.log("all===", res.data);
         setProductData(res.data)
@@ -237,7 +269,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name); setProductName(datas.name) }}>View</Button>
                             {/* <Button variant="primary" onClick={toggleShow} className="me-2">{name}</Button> */}
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
@@ -258,16 +290,18 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     {/* <Link className='btn btn-primary p-2 w-25' to="/Login">Bid</Link> */}
-                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>Bid</Button>
+                                    <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name });setHighestBid(canvasData.highestbid) }}>Bid</Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <p className='text-danger mt-2'>{bidError}</p>
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
-                                          <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
-                                          <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
+                                            <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
+                                            <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
                                         </div>
                                       </div>
                                     ) : ""
@@ -308,25 +342,25 @@ function HomePage() {
                     </li> */}
                     {/* code for connecting nodejs */}
                     <li class="page-item">
-                        <a class={`page-link ${(page === 1) ? "disabled" : ""}`} href='#' onClick={() => setPage(page - 1)}>Previous</a>
+                      <span class={`page-link ${(page === 1) ? "disabled" : ""}`} onClick={() => {setPage(page - 1);window.scrollTo({top:0,behavior:'smooth'})}}>Previous</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 1) ? "active" : ""}`} href='#' onClick={() => setPage(1)}>1</a>
+                      <span class={`page-link ${(page === 1) ? "active" : ""}`} onClick={() => {setPage(1);window.scrollTo({top:0,behavior:'smooth'})}}>1</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 2) ? "active" : ""}`} href='#' onClick={() => setPage(2)}>2</a>
+                      <span class={`page-link ${(page === 2) ? "active" : ""}`} onClick={() => {setPage(2);window.scrollTo({top:0,behavior:'smooth'})}}>2</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 3) ? "active" : ""}`} href='#' onClick={() => setPage(3)}>3</a>
+                      <span class={`page-link ${(page === 3) ? "active" : ""}`} onClick={() => {setPage(3);window.scrollTo({top:0,behavior:'smooth'})}}>3</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 4) ? "active" : ""}`} href='#' onClick={() => setPage(4)}>4</a>
+                      <span class={`page-link ${(page === 4) ? "active" : ""}`} onClick={() => {setPage(4);window.scrollTo({top:0,behavior:'smooth'})}}>4</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 5) ? "active" : ""}`} href='#' onClick={() => setPage(5)}>5</a>
+                      <span class={`page-link ${(page === 5) ? "active" : ""}`} onClick={() => {setPage(5);window.scrollTo({top:0,behavior:'smooth'})}}>5</span>
                     </li>
                     <li class="page-item">
-                        <a class={`page-link ${(page === 5) ? "disabled" : ""}`} href='#' onClick={() => setPage(page + 1)}>Next</a>
+                      <span class={`page-link ${(page === 5) ? "disabled" : ""}`} onClick={() => {setPage(page + 1);window.scrollTo({top:0,behavior:'smooth'})}}>Next</span>
                     </li>
                     {/*  */}
                   </ul>
@@ -350,7 +384,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name);setProductName(datas.name) }}>View</Button>
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                             <Offcanvas.Header closeButton onClick={() => setBid(false)}>
@@ -370,6 +404,7 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
@@ -377,7 +412,7 @@ function HomePage() {
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -414,7 +449,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name);setProductName(datas.name) }}>View</Button>
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                             <Offcanvas.Header closeButton onClick={() => setBid(false)}>
@@ -434,6 +469,7 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
@@ -441,7 +477,7 @@ function HomePage() {
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -478,7 +514,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name);setProductName(datas.name) }}>View</Button>
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                             <Offcanvas.Header closeButton onClick={() => setBid(false)}>
@@ -498,6 +534,7 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
@@ -505,7 +542,7 @@ function HomePage() {
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -542,7 +579,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name);setProductName(datas.name) }}>View</Button>
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                             <Offcanvas.Header closeButton onClick={() => setBid(false)}>
@@ -562,6 +599,7 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     <Button variant="primary" ref={bidInputRef} className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
@@ -569,7 +607,7 @@ function HomePage() {
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
@@ -606,7 +644,7 @@ function HomePage() {
                         <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
                         <>
                           <div className="text-center mt-3">
-                            <Button className='p-2 w-25' variant="primary" onClick={() => handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image)}>View</Button>
+                            <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name);setProductName(datas.name) }}>View</Button>
                           </div>
                           <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                             <Offcanvas.Header closeButton onClick={() => setBid(false)}>
@@ -626,6 +664,7 @@ function HomePage() {
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Regular Price :</p><span className='fw-bold'>{canvasData.regprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Starting Amount :</p><span className='fw-bold'>{canvasData.bidprice}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Until :</p><span className='fw-bold'>{canvasData.biddate}</span></div>
+                                  <div class="d-flex gap-1"><p className='text-nowrap'>Highest Bid :</p><span className='fw-bold'>{canvasData.highestbid}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{canvasData.description}</span></div>
                                   <div className="text-center mt-4">
                                     <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name }) }}>
@@ -633,7 +672,7 @@ function HomePage() {
                                     </Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className="form-control form-control-lg mt-4 border-primary" aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                           <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
                                           <Button variant="danger" className='p-2 px-4' onClick={() => setBid(false)}>Cancel</Button>
