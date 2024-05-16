@@ -27,88 +27,88 @@ function Appliances({ appliancesData }) {
     setData({ ...data, [name]: value })
   }
   // code for connecting nodejs this part of backend is not done in springboot
-  function handleView(x){
+  function handleView(x) {
     axios.get(`http://localhost:8080/bidding/get/${x}`)
-    .then((res) => {
-        if(res.data.length === 1){
-            setCanvasData(canvasData => ({...canvasData,highestbid:res.data[0].amount}))
+      .then((res) => {
+        if (res.data.length === 1) {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: res.data[0].amount }))
         }
-        else{
-            setCanvasData(canvasData => ({...canvasData,highestbid:"No one bids till now"}))
+        else {
+          setCanvasData(canvasData => ({ ...canvasData, highestbid: "No one bids till now" }))
         }
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
         console.log(error);
-    })
-}
-//
+      })
+  }
+  //
   function handleSubmit(event) {
     event.preventDefault()
     console.log("data===", data)
     fetch("http://localhost:8080/user/login", { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(data) })
-        .then((response) => {
-            console.log("res==", response)
-            // code for connecting springboot
-            // return response.json()
-            // code for connecting nodejs
-            if (response.status === 200) {
-                return response.json()
-                    .then(async (resdata) => {
-                        console.log(resdata);
-                        if (resdata.status === true) {
-                            setError({ ...error, username: "", password: "" });
-                            setTimeout(success, 100)
-                            function success() {
-                                console.log("success");
-                                localStorage.setItem("token", resdata.token)
-                                alert("Successfully Login!");
-                                navigate("/Home", { state: data });
-                            }
-                        }
-                        else if (resdata.status === false) {
-                            setError({ ...error, username: "", password: resdata.msg })
-                        }
-                    })
-            }
-            else if (response.status === 404) {
-                return response.json()
-                    .then((data) => {
-                        console.log(data);
-                        setError({ ...error, username: data.msg, password: "" })
-                    })
-            }
-            else {
-                throw new Error("Response was not ok")
-            }
-        })
-        // 
+      .then((response) => {
+        console.log("res==", response)
         // code for connecting springboot
-        /*.then((resdata) => {
-          console.log(resdata);
-          // console.log(resdata)
-          if (resdata.statusCodeValue === 409) {
-            console.log("wrong")
-            console.log(resdata.body)
-            setError({ ...error, username: resdata.body, password: "" })
-          }
-          else {
-            if ((data.username === resdata.username) && (data.password === resdata.password)) {
+        // return response.json()
+        // code for connecting nodejs
+        if (response.status === 200) {
+          return response.json()
+            .then(async (resdata) => {
+              console.log(resdata);
+              if (resdata.status === true) {
                 setError({ ...error, username: "", password: "" });
-                setTimeout(success,100)
+                setTimeout(success, 100)
                 function success() {
-                    console.log("success");
-                    alert("Successfully Login!");
-                    navigate("/Home",{state:resdata});
+                  console.log("success");
+                  localStorage.setItem("token", resdata.token)
+                  alert("Successfully Login!");
+                  navigate("/Home", { state: data });
                 }
-            }
-            else if (data.password !== resdata.password) {
-              setError({ ...error, username: "", password: "The password you entered is incorrect" })
-            }
+              }
+              else if (resdata.status === false) {
+                setError({ ...error, username: "", password: resdata.msg })
+              }
+            })
+        }
+        else if (response.status === 404) {
+          return response.json()
+            .then((data) => {
+              console.log(data);
+              setError({ ...error, username: data.msg, password: "" })
+            })
+        }
+        else {
+          throw new Error("Response was not ok")
+        }
+      })
+      // 
+      // code for connecting springboot
+      /*.then((resdata) => {
+        console.log(resdata);
+        // console.log(resdata)
+        if (resdata.statusCodeValue === 409) {
+          console.log("wrong")
+          console.log(resdata.body)
+          setError({ ...error, username: resdata.body, password: "" })
+        }
+        else {
+          if ((data.username === resdata.username) && (data.password === resdata.password)) {
+              setError({ ...error, username: "", password: "" });
+              setTimeout(success,100)
+              function success() {
+                  console.log("success");
+                  alert("Successfully Login!");
+                  navigate("/Home",{state:resdata});
+              }
           }
-        })*/
-        .catch((error) => {
-            console.log("Failed to fetch data ", error)
-        })
+          else if (data.password !== resdata.password) {
+            setError({ ...error, username: "", password: "The password you entered is incorrect" })
+          }
+        }
+      })*/
+      .catch((error) => {
+        console.log("Failed to fetch data ", error)
+      })
   }
   return (
     <div className="py-5">
@@ -128,7 +128,7 @@ function Appliances({ appliancesData }) {
               <div class="card-text d-flex gap-1"><p className='text-nowrap fw-bold'>Description :</p><span className='fst-italic'>{datas.description}</span></div>
               <>
                 <div className="text-center mt-3">
-                  <Button className='p-2 w-25' variant="primary" onClick={() => {handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image);handleView(datas.name)}}>View</Button>
+                  <Button className='p-2 w-25' variant="primary" onClick={() => { handleShow(datas.name, datas.category, datas.description, datas.regprice, datas.bidprice, datas.biddate, datas.image); handleView(datas.name) }}>View</Button>
                 </div>
                 <Offcanvas show={show} onHide={handleClose} backdrop={false} scroll={true} placement='end'>
                   <Offcanvas.Header closeButton>
@@ -141,7 +141,7 @@ function Appliances({ appliancesData }) {
                         {/* code for connecting springboot*/}
                         {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                         {/* code for connecting nodejs */}
-                        <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                        <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt="not found" />
                         {/*  */}
                         <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                         <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>

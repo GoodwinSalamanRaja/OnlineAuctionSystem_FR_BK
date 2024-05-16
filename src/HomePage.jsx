@@ -134,6 +134,7 @@ function HomePage() {
     console.log("useeefeect handleView called");
     // console.log(productName);
     handleView(productName)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bid])
   //
   function handleSubmit(event) {
@@ -283,7 +284,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found' />
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
@@ -397,7 +398,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found' />
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
@@ -462,7 +463,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found'/>
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
@@ -527,7 +528,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found'/>
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1 mt-3"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
@@ -592,7 +593,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found'/>
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
@@ -657,7 +658,7 @@ function HomePage() {
                                   {/* code for connecting springboot*/}
                                   {/* <img src={"http://localhost:8080/uploads/" + canvasData.image} width="100%" /> */}
                                   {/* code for connecting nodejs */}
-                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" />
+                                  <img src={"http://localhost:8080/public/" + canvasData.image} width="100%" alt='not found'/>
                                   {/*  */}
                                   <div class="d-flex gap-1 mt-4"><p className='text-nowrap'>Name :</p><span className='fw-bold'>{canvasData.name}</span></div>
                                   <div class="d-flex gap-1"><p className='text-nowrap'>Category :</p><span className='fw-bold'>{canvasData.category}</span></div>
