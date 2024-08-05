@@ -119,7 +119,7 @@ exports.update = (req, res) => {
                 regprice: regprice,
                 bidprice: bidprice,
                 biddate: biddate,
-                image: random + path.extname(req.file.originalname)
+                ...req.file && ({image:random + path.extname(req.file.originalname)})
             }
         }
     )
