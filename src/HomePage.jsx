@@ -155,6 +155,19 @@ function HomePage() {
         console.log(error)
       })
     }
+    else if((highestBid === 'No one bids till now') && (parseFloat(canvasData.bidprice) < amount)){
+      setBidError(null)
+      axios.post(`http://localhost:8080/bidding/set/${resdata._id}`, bidDetails)
+      // 
+      .then((response) => {
+        console.log("bid===", response.data)
+        alert("Bid submitted successfully!!")
+        setBid(false)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    }
     else{
       setBidError("Your bids must be more than other users!")
     }
@@ -298,7 +311,10 @@ function HomePage() {
                                     <Button variant="primary" className='w-25 p-2' onClick={() => { setBid(true); setTimeout(scrollToBidInput, 100); setBidDetails({ ...bidDetails, productName: canvasData.name });setHighestBid(canvasData.highestbid) }}>Bid</Button>
                                     {bid ? (
                                       <div className='text-center px-4'>
-                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${amount>canvasData.highestbid ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
+                                        {console.log(amount,"amount")}
+                                        {console.log(canvasData,"amounts")}
+                                        {console.log((canvasData.highestbid === 'No one bids till now') && (parseFloat(canvasData.bidprice) < amount),"amountss")}
+                                        <input type="number" ref={bidInputRef} placeholder="Enter your bid amount" className={`form-control form-control-lg mt-4 ${(canvasData.highestbid === 'No one bids till now') && (parseFloat(canvasData.bidprice) < amount) ? "was-validated" : (amount>canvasData.highestbid) ? "was-validated" : "is-invalid"}`} aria-label=".form-control-lg example" required onChange={handleBidChange} />
                                         <p className='text-danger mt-2'>{bidError}</p>
                                         <div className='d-flex gap-5 mt-4 justify-content-center'>
                                             <Button variant="success" className='p-2 px-4' onClick={handleSubmit}>Submit</Button>
