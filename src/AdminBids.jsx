@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
+import { Modal } from "react-bootstrap";
 
 function AdminBids() {
   const [biddingData, setBiddingData] = useState([]);
@@ -9,8 +10,9 @@ function AdminBids() {
   const [userData, setUserData] = useState();
   var count = 1;
   // console.log("id===",id)
-  function BidUserDetails(a, b, c) {
+  async function BidUserDetails(a, b, c) {
     setUserData({ ...userData, name: a, username: b, email: c });
+    handleShow();
   }
   useEffect(() => {
     const bidAmountsByProduct = {};
@@ -28,15 +30,15 @@ function AdminBids() {
       });
       console.log("======", bidAmountsByProduct);
     }
-    const newResult = {}
+    const newResult = {};
     biddingData.forEach((element) => {
-        element.biddings.forEach((bid) => {
-          if (bid.amount === bidAmountsByProduct[bid.productName]) {
-            newResult[bid._id] = "Highest In Bid";
-          }
-        });
+      element.biddings.forEach((bid) => {
+        if (bid.amount === bidAmountsByProduct[bid.productName]) {
+          newResult[bid._id] = "Highest In Bid";
+        }
       });
-    setResult(newResult)
+    });
+    setResult(newResult);
   }, [biddingData]);
   useEffect(() => {
     // code for connecting springboot
@@ -104,6 +106,11 @@ function AdminBids() {
   }, [size]);
 
   const [result, setResult] = useState();
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   return (
     <div className="bg-white">
@@ -207,88 +214,29 @@ function AdminBids() {
                         </td>
                         <td className="border border-2 text-center">
                           <span
-                            className={`${result[bidding._id] ? "bg-success py-2 px-4 text-white fw-bold rounded-2" : "bg-secondary py-2 px-5 text-white fw-bold rounded-2"}`}
+                            className={`${
+                              result[bidding._id]
+                                ? "bg-success py-2 px-4 text-white fw-bold rounded-2"
+                                : "bg-secondary py-2 px-5 text-white fw-bold rounded-2"
+                            }`}
                           >
                             {result[bidding._id] || "Pending"}
                           </span>
                         </td>
                         <td className="border border-2 text-center">
                           <button
-                            type="button"
-                            class="btn btn-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#staticBackdrop"
-                            onClick={() =>
-                              BidUserDetails(
+                            onClick={async () =>
+                              await BidUserDetails(
                                 datas.name,
                                 datas.username,
                                 datas.email
                               )
                             }
+                            type="button"
+                            class="btn btn-primary"
                           >
                             View Buyer Details
                           </button>
-                          {userData && (
-                            <div
-                              class="modal"
-                              id="staticBackdrop"
-                              data-bs-backdrop="static"
-                              data-bs-keyboard="false"
-                              tabindex="-1"
-                              aria-labelledby="staticBackdropLabel"
-                              aria-hidden="true"
-                            >
-                              <div class="modal-dialog">
-                                <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h5
-                                      class="modal-title"
-                                      id="staticBackdropLabel"
-                                    >
-                                      Buyer Details
-                                    </h5>
-                                    <button
-                                      type="button"
-                                      class="btn-close"
-                                      data-bs-dismiss="modal"
-                                      aria-label="Close"
-                                    ></button>
-                                  </div>
-                                  <div class="modal-body">
-                                    <div>
-                                      <div className="d-flex gap-1">
-                                        <p>Name :</p>
-                                        <span className="fw-bold">
-                                          {userData.name}
-                                        </span>
-                                      </div>
-                                      <div className="d-flex gap-1">
-                                        <p>UserName :</p>
-                                        <span className="fw-bold">
-                                          {userData.username}
-                                        </span>
-                                      </div>
-                                      <div className="d-flex gap-1">
-                                        <p>Email :</p>
-                                        <span className="fw-bold">
-                                          {userData.email}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button
-                                      type="button"
-                                      class="btn btn-secondary"
-                                      data-bs-dismiss="modal"
-                                    >
-                                      Close
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );
@@ -296,6 +244,37 @@ function AdminBids() {
                 </tbody>
               ))}
           </table>
+          {userData && (
+            <Modal class="modal" show={show} onHide={handleClose}>
+              <Modal.Header closeButton>Buyer Details</Modal.Header>
+              <Modal.Body>
+                <div>
+                  <div className="d-flex gap-1">
+                    <p>Name :</p>
+                    <span className="fw-bold">{userData.name}</span>
+                  </div>
+                  <div className="d-flex gap-1">
+                    <p>UserName :</p>
+                    <span className="fw-bold">{userData.username}</span>
+                  </div>
+                  <div className="d-flex gap-1">
+                    <p>Email :</p>
+                    <span className="fw-bold">{userData.email}</span>
+                  </div>
+                </div>
+              </Modal.Body>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
+              </div>
+            </Modal>
+          )}
         </div>
       </div>
     </div>
